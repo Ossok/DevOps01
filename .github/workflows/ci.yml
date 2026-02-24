@@ -13,7 +13,7 @@ jobs:
 
     services:
       mariadb: 
-        images: mariadb:12.1.2
+        image: mariadb:12.1.2
         env:
           MARIADB_ROOT_PASSWORD: toor
           MARIADB_DATABASE: test
