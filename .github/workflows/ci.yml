@@ -20,14 +20,15 @@ jobs:
           MARIADB_USER: test
           MARIADB_PASSWORD: test
         ports:
-         - 3306:3306
+          - 3306:3306
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3
 
     env:
       BDD_HOST: 127.0.0.1
       BDD_NAME: test
       BDD_USER: test
       BDD_PASS: test
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,7 +38,7 @@ jobs:
           sudo apt install -y mysql-client
           mysql -h 127.0.0.1 --port 3306 -u root -ptoor -e "SHOW DATABASES"
 
-      - name: Setup  Node
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
@@ -45,10 +46,12 @@ jobs:
       - name: Install Dep
         run: npm i
 
-      - name: Init and Populate BDD
-        run: |
-          npm run initbdd
-          npm run populate
+      - name: Init  BDD
+        run: npm run initbdd
+          
+      - name: Populate BDD
+        run : |
+          mysql -u root -ptoor --host 127.0.0.1 --port 3306 --database test < ./test/insert_test_user.sql
 
       - name: Run test and coverage
         run: npm run test:cov
@@ -59,7 +62,7 @@ jobs:
           name: back-coverage-report
           path: backend/coverage
           retention-days: 1
-      
+
   Frontend:
     needs: [Backend]
     runs-on: ubuntu-latest
@@ -86,21 +89,21 @@ jobs:
         if: success()
         run: curl http://127.0.0.1:12000
 
-      - name: Setup  Node
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
 
-      - name: Cypress E2A Install
+      - name: Cypress E2E Install
         uses: cypress-io/github-action@v6
         with:
           runTests: false
           working-directory: frontend
-    
+
       - name: Install Dep
         run: npm i
 
-      - name: Cypress E2A TEST
+      - name: Cypress E2E TEST
         uses: cypress-io/github-action@v6
         with:
           install: false
@@ -110,14 +113,14 @@ jobs:
       - name: Generate Coverage repport
         run: npm run cypress:cov
 
-      - name: Upload Cy Screen
+      - name: Upload Cy Screen - pour le fun
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: cypress-screenshot
           path: frontend/cypress/screenshots
           retention-days: 1
-    
+
       - name: Upload Cy Video
         if: always()
         uses: actions/upload-artifact@v4
@@ -126,7 +129,7 @@ jobs:
           path: frontend/cypress/videos
           retention-days: 1
 
-      - name: Upload Coverage repport
+      - name: Upload Coverage report
         uses: actions/upload-artifact@v4
         with:
           name: cypress-coverage-report
