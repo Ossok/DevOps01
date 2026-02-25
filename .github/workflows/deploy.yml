@@ -49,7 +49,7 @@ jobs:
             adminUsername=${{secrets.AZURE_VM_LOGIN}}
             adminPasswordOrKey=${{secrets.AZURE_VM_PASSWORD}}
             vmName=ClicBoumPaf-Server
-            vmSize=Standard_B2s
+            vmSize=Standard_D2d_v4
           
       - name: Open Port on Security Group
         uses: azure/CLI@v2
